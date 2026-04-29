@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFMamba | RGBN Spectral Crosstalk Elimination</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            min-height: 20vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            max-width: 1300px;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            max-width: 900px;
+            margin-bottom: 10px;
+        }
+        .hero .authors {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .abstract {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            font-style: normal;
+            margin: 20px 0;
+        }
+        .highlights-compact {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .highlight-card-compact {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 12px 18px;
+            border-radius: 8px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            transition: transform 0.3s ease;
+        }
+        .highlight-card-compact:hover {
+            transform: translateX(5px);
+        }
+        .highlight-card-compact i {
+            font-size: 1.6rem;
+            color: #667eea;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .highlight-card-compact h4 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        .highlight-card-compact p {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        .figure-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 25px 0;
+        }
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        .figure-container .caption {
+            margin-top: 12px;
+            font-size: 0.95rem;
+            color: #555;
+            font-style: italic;
+        }
+        .figure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+        .tab-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            overflow: visible;
+            position: relative;
+            margin: 0 40px;
+        }
+        .tab-nav-arrow {
+            position: absolute;
+            top: 220px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            color: #667eea;
+            transition: all 0.3s ease;
+            z-index: 10;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .tab-nav-arrow:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        .tab-nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .tab-nav-arrow#tab-prev { left: -90px; }
+        .tab-nav-arrow#tab-next { right: -90px; }
+        .tab-nav {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .tab-nav-buttons {
+            display: flex;
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tab-nav-buttons::-webkit-scrollbar { display: none; }
+        .tab-nav-buttons button {
+            flex: 1;
+            min-width: 160px;
+            padding: 18px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-nav-buttons button:hover {
+            color: #667eea;
+            background: rgba(102,126,234,0.05);
+        }
+        .tab-nav-buttons button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        .tab-content {
+            padding: 30px;
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .affiliations {
+            font-size: 1rem;
+            color: #555;
+            margin-top: 20px;
+            line-height: 1.7;
+        }
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.6rem; }
+            .tab-section { margin: 0 20px; }
+            .tab-nav-arrow { display: none; }
+            .figure-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>Exploiting Frequency and Spectral Clues for RGBN Spectral Crosstalk Elimination</h1>
+    <p class="authors">Yuchen Wang, Xin Wang, Ziying Huang, Chang Chen, Ruikang Xu, Xue Hu, Yiren Zhou, Fenglong Song, Lizhi Wang, Hua Huang</p>
+    <div class="btn-group">
+        <a href="#" class="btn btn-primary" style="background:white; color:#667eea; padding:12px 25px; border-radius:30px; text-decoration:none; font-weight:600;"><i class="fas fa-file-pdf"></i> Paper</a>
+        <a href="https://github.com/bitwangyuchen/CFMamba-code" class="btn btn-primary" style="background:white; color:#667eea; padding:12px 25px; border-radius:30px; text-decoration:none; font-weight:600;"><i class="fab fa-github"></i> Code & Dataset</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Tab Container -->
+    <div class="tab-section">
+        <button class="tab-nav-arrow" id="tab-prev" disabled><i class="fas fa-chevron-left"></i></button>
+        <div class="tab-nav">
+            <div class="tab-nav-buttons">
+                <button class="tab-btn active" data-tab="abstract">Abstract</button>
+                <button class="tab-btn" data-tab="method">Method</button>
+                <button class="tab-btn" data-tab="dataset">Dataset</button>
+                <button class="tab-btn" data-tab="results">Results</button>
+            </div>
+        </div>
+        <button class="tab-nav-arrow" id="tab-next"><i class="fas fa-chevron-right"></i></button>
+
+        <div class="tab-content">
+            <!-- ===================== Abstract ===================== -->
+            <div class="tab-pane active" id="abstract">
+                <h2>Abstract</h2>
+                <div class="abstract">
+                    RGBN cameras capture visible and near-infrared (NIR) information through a single sensor, providing additional spectral representation for scene perception. However, spectral crosstalk caused by removing the infrared cut-off filter severely degrades imaging quality. Existing methods employ end-to-end networks to directly fit RGBN data mappings, neglecting physical priors inherent in the spectral degradation process. In this paper, through frequency analysis and imaging mechanism investigation, we reveals two key physical clues for the first time: the frequency clue—crosstalk degradation primarily manifests as global spectral shifts in the low-frequency while high-frequency structural information remains relatively intact; the spectral clue—our analysis demonstrates that RGBN spectral crosstalk is fundamentally determined by the Camera Spectral Response (CSR), reflecting channel-specific sensitivity to NIR interference. Based on these clues, we propose a CSR-guided Frequency Mamba (CFMamba): frequency decoupling enables the model to focus on critical degradation components, while integrating camera spectral response as a key prior with Mamba's powerful global sequential modeling capability to precisely characterize crosstalk-induced degradation. In addition, we capture real hyperspectral data and simulate paired RGBN datasets across diverse scenes to evaluate the model under different environmental configurations. Experimental results demonstrate that the proposed method outperforms existing approaches on both synthetic and real-world datasets while maintaining low computational overhead.
+                </div>
+
+                <h3>Key Contributions</h3>
+                <div class="highlights-compact">
+                    <div class="highlight-card-compact">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>
+                            <h4>Two Physical Clues</h4>
+                            <p>We reveal the frequency clue (crosstalk mainly exists in low-frequency) and spectral clue (crosstalk is dominated by Camera Spectral Response) for RGBN crosstalk elimination.</p>
+                        </div>
+                    </div>
+                    <div class="highlight-card-compact">
+                        <i class="fas fa-cogs"></i>
+                        <div>
+                            <h4>CFMamba Framework</h4>
+                            <p>We propose a CSR-guided Frequency Mamba that uses wavelet frequency decoupling and physical prior injection to efficiently model global crosstalk degradation.</p>
+                        </div>
+                    </div>
+                    <div class="highlight-card-compact">
+                        <i class="fas fa-database"></i>
+                        <div>
+                            <h4>SDM Dataset</h4>
+                            <p>We build a high-quality hyperspectral reflectance dataset covering visible/NIR bands and generate physically realistic paired RGBN data for training and evaluation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="images/figure1.pdf" alt="RGBN camera and crosstalk">
+                    <div class="caption">Figure 1: RGBN camera replaces one green channel with NIR filter, leading to spectral crosstalk in visible channels. Our method eliminates crosstalk via frequency and spectral clue modeling.</div>
+                </div>
+            </div>
+
+            <!-- ===================== Method ===================== -->
+            <div class="tab-pane" id="method">
+                <h2>Method: CFMamba</h2>
+                <p>Our CFMamba framework is guided by two physical priors: <strong>frequency clue</strong> and <strong>spectral clue</strong>.</p>
+                <ul style="margin:15px 0; padding-left:25px; line-height:1.7;">
+                    <li><strong>Frequency Decoupling</strong>: Use DWT to split features into high-frequency (texture) and low-frequency (crosstalk).</li>
+                    <li><strong>High-Frequency Enhancement</strong>: Simple ResBlock preserves sharp details.</li>
+                    <li><strong>CSR-Guided Low-Frequency Mamba</strong>: Embed camera spectral response into Mamba for global degradation modeling.</li>
+                    <li><strong>CSR Modules</strong>: CSR-Embedding, CSR-Linear, CSR-GroupMamba, CSR-Channel Interaction.</li>
+                </ul>
+
+                <div class="figure-container">
+                    <img src="images/figure3.pdf" alt="CFMamba overall architecture">
+                    <div class="caption">Figure 2: Overall pipeline of the proposed CSR-guided Frequency Mamba (CFMamba).</div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="images/figure4.pdf" alt="CSR-guided Mamba block">
+                    <div class="caption">Figure 3: Detailed structure of the CSR-Guided Low-Frequency Mamba block.</div>
+                </div>
+            </div>
+
+            <!-- ===================== Dataset ===================== -->
+            <div class="tab-pane" id="dataset">
+                <h2>Dataset: SDM (Simulated Diverse scenes Multi-spectral)</h2>
+                <p>We construct a physically realistic RGBN dataset using real hyperspectral images and camera spectral response.</p>
+                <ul style="margin:15px 0; padding-left:25px; line-height:1.7;">
+                    <li>530 hyperspectral reflectance images (indoor + outdoor)</li>
+                    <li>400–1000 nm wavelength, 512×512 resolution</li>
+                    <li>4 light sources: Sunlight, INC, Fluorescence, LED</li>
+                    <li>Paired RGBN + clean RGB generated by real CSR curves</li>
+                </ul>
+
+                <div class="figure-container">
+                    <img src="images/figure5.pdf" alt="Dataset overview">
+                    <div class="caption">Figure 4: SDM dataset details: (a) power spectra of four light sources; (b) paired samples in diverse scenarios.</div>
+                </div>
+            </div>
+
+            <!-- ===================== Results ===================== -->
+            <div class="tab-pane" id="results">
+                <h2>Qualitative Results</h2>
+                <p>We compare with state-of-the-art methods including CDNet, Han et al., TS-RNDF, NAFNet, HySAT, MaIR, MambaIRv2.</p>
+
+                <div class="figure-container">
+                    <img src="images/figure6.png" alt="SDM dataset visualization">
+                    <div class="caption">Figure 5: Visual comparison on the SDM simulated dataset. Our method restores accurate color and sharp details.</div>
+                </div>
+
+                <div class="figure-container">
+                    <img src="images/figure8.png" alt="Real OMSIV dataset visualization">
+                    <div class="caption">Figure 6: Visual comparison on real-world OMSIV dataset. Our method effectively removes real-world spectral crosstalk.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Affiliations -->
+    <div class="section" style="margin: 30px 40px 0 40px;">
+        <h2>Affiliations</h2>
+        <div class="affiliations">
+            <p>1. School of Computer Science and Technology, Beijing Institute of Technology, Beijing 100081, China</p>
+            <p>2. School of Artificial Intelligence, Beijing Normal University, Beijing 100875, China</p>
+            <p>3. Huawei Noah's Ark Lab, Beijing 100085, China</p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 CFMamba Project. All rights reserved.</p>
+    <p>Corresponding author: Lizhi Wang (wanglizhi@bnu.edu.cn)</p>
+</footer>
+
+<script>
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.tab-pane');
+    const prev = document.getElementById('tab-prev');
+    const next = document.getElementById('tab-next');
+    let idx = 0;
+
+    function switchTab(i) {
+        tabs.forEach(t=>t.classList.remove('active'));
+        panes.forEach(p=>p.classList.remove('active'));
+        tabs[i].classList.add('active');
+        document.getElementById(tabs[i].dataset.tab).classList.add('active');
+        idx = i;
+        prev.disabled = idx === 0;
+        next.disabled = idx === tabs.length-1;
+    }
+
+    tabs.forEach((t,i)=>t.addEventListener('click',()=>switchTab(i)));
+    prev.addEventListener('click',()=>switchTab(idx-1));
+    next.addEventListener('click',()=>switchTab(idx+1));
+</script>
+</body>
+</html>
